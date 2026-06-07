@@ -1,0 +1,1097 @@
+{
+  "name": "Automated Weekly Newsletter Generator Final copy",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        224
+      ],
+      "id": "95b5a549-29c1-4723-b3da-3bf7bb04a531",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6KtdQjpZ2DTzoEdb",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-tts",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        224
+      ],
+      "id": "054a721c-b518-4b7b-a0ff-e590804d0ac9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6KtdQjpZ2DTzoEdb",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        624
+      ],
+      "id": "fc104534-687c-46b1-9888-385e503d9e21",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bjw8oenxHcVX3MJO",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        624
+      ],
+      "id": "261ec474-0f21-4931-9ce9-835d73d39a68",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bjw8oenxHcVX3MJO",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "Extract the top tech, startup, or economy headline.\n\nReturn JSON:\n{\n  \"source\": \"The Star\",\n  \"headline\": \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        800
+      ],
+      "id": "c70d7055-33f3-4199-8f51-e25b5f9164f7",
+      "name": "AI Agent_The Star",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "Extract the most important innovation or economy headline.\n\nReturn ONLY JSON:\n{\n  \"source\": \"The Standard\",\n  \"headline\": \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        1200
+      ],
+      "id": "30190363-f746-4039-bcb5-5b5aecc8dfb8",
+      "name": "AI Agent_The Standard",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.businessdailyafrica.com/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -784,
+        512
+      ],
+      "id": "492c4b19-f646-4cb8-a99e-c3fed59211fa",
+      "name": "HTTP_Business Daily Reporter",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a field reporter for Nairobi Nexus.\n\nExtract the single most important Kenyan business or tech headline from the raw HTML.\n\nReturn ONLY valid JSON:\n{\n  \"source\": \"Business Daily\",\n  \"headline\": \"headline text\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        400
+      ],
+      "id": "1517811d-67c9-4978-8180-f356f1e1ebef",
+      "name": "AI Agent _ Business Daily Reporter",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.the-star.co.ke/news",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -784,
+        912
+      ],
+      "id": "e6442b83-8563-457d-95f2-1e113d503a34",
+      "name": "HTTP_The Star",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are a field reporter for Nairobi Nexus.\n\nAnalyze the provided HTML and extract the single most important tech or business headline.\n\nIMPORTANT:\n- Return ONLY valid JSON\n- Do not include explanations\n- Do not use markdown\n- Do not wrap the JSON in backticks\n\nCorrect format:\n{\n  \"source\": \"TechCabal\",\n  \"headline\": \"headline text here\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "756d6368-c521-4729-b02b-20291ad05985",
+      "name": "AI Agent _ TechCabal Reporter",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://techcabal.com/category/news/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -784,
+        112
+      ],
+      "id": "ae5410ad-1e2d-40dc-a816-93dd92a646f8",
+      "name": "HTTP _ TechCabal",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.standardmedia.co.ke/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -784,
+        1312
+      ],
+      "id": "ccc618bd-b303-4f44-b935-1875277d0057",
+      "name": "HTTP_The Standard",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://kenyanwallstreet.com/",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -784,
+        1712
+      ],
+      "id": "1ad571c5-c030-402e-9ade-59026cbaeffb",
+      "name": "HTTP _The Kenyan Wallstreet",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        1024
+      ],
+      "id": "b2c682bb-1c4e-438b-8a9a-20c95370d52d",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "pixtral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        1024
+      ],
+      "id": "0ab836a6-5ae5-4383-8f35-0489f56e594e",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        1424
+      ],
+      "id": "ea127898-5816-4200-b2f3-ff98443b6e87",
+      "name": "Mistral Cloud Chat Model2",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-2512",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        1424
+      ],
+      "id": "ad03470b-69ba-4df1-83f9-95b822c30d0a",
+      "name": "Mistral Cloud Chat Model3",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        1936
+      ],
+      "id": "5e5d52da-3940-4eea-9cd5-959fa3f410fb",
+      "name": "Mistral Cloud Chat Model4",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 100,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        1936
+      ],
+      "id": "a971ea70-536d-4ac9-b847-3056bd303976",
+      "name": "Mistral Cloud Chat Model5",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"source\": \"TechCabal\", \"headline\": \"Sample headline here\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        224
+      ],
+      "id": "3686d682-e006-4476-aadb-b2fc6e1f4f33",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"source\": \"Business Daily\", \"headline\": \"Sample headline here\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        624
+      ],
+      "id": "ed8b2e5b-3b3c-405f-b82c-51b1348b8af6",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"source\": \"The Star\", \"headline\": \"Sample headline here\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        1024
+      ],
+      "id": "eb9942d0-49cc-458e-b59b-0d89b2f3b9c9",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"source\": \"The Standard\", \"headline\": \"Sample headline here\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        1424
+      ],
+      "id": "6e925d9a-541e-4bf4-b3df-8e067cfc3807",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"source\": \"Kenyan Wallstreet\", \"headline\": \"Sample headline here\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        1936
+      ],
+      "id": "7cca6d17-8712-47d5-a39d-f8d6d4a5ca6a",
+      "name": "Structured Output Parser4"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -96,
+        864
+      ],
+      "id": "f4db98eb-af38-4e17-83d8-dc26ae514918",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are the headlines from Kenyan publications:\n{{ JSON.stringify($json.data) }}\n\nRespond with ONLY this JSON and nothing else — no markdown fences, no explanation:\n{\"intro\": \"your markdown newsletter here\"}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are Kamau, a witty tech editor in Nairobi. Synthesize the following headlines into a short, engaging newsletter intro.\n\nConstraints:\n1. Strictly under 200 words.\n2. Use Kenyan slang (e.g., \"Bazeng\", \"Form ni gani\", \"Sasa\", \"Niaje\").\n3. Format the output as Markdown.\n\nOutput ONLY the newsletter intro, no extra text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        912
+      ],
+      "id": "c2efc4f5-4f06-4a7f-874a-3d23c440f963",
+      "name": "AI Agent_Chief Editor",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        128,
+        912
+      ],
+      "id": "3d956fad-adb6-4dde-9546-35a87632bdc3",
+      "name": "Aggregate",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs",
+          "mode": "list",
+          "cachedResultName": "NewsletterManager",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Drafts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "=={{ $now }}",
+            "Successful Sources": "=={{ $node[\"Aggregate\"].json.data.length }}",
+            "Draft Body": "=={{ $json.output.intro }}",
+            "Model Used": "mistral-large-latest(fallback:mistral-large-latest)"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Successful Sources",
+              "displayName": "Successful Sources",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Draft Body",
+              "displayName": "Draft Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Model Used",
+              "displayName": "Model Used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        912
+      ],
+      "id": "9c19d2aa-baf6-425c-b417-d97e7c7a8cbd",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iAWp3z3UnwhtcHyK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "amosmokua3@gmail.com",
+        "subject": "=Nairobi Nexus Draft – {{ $now.toFormat('yyyy-MM-dd') }}",
+        "message": "={{ $json[\"Draft Body\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        912
+      ],
+      "id": "f22bdd8b-d88d-456f-ab0e-a95c7201ad11",
+      "name": "Send a message",
+      "webhookId": "b77d511c-bae4-439e-88fc-6e6eec0d2798",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PuUrOjjx2KSHbAoA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"intro\": {\n      \"type\": \"string\",\n      \"description\": \"The newsletter introduction text, strictly under 200 words, using Kenyan slang, formatted as Markdown.\"\n    }\n  },\n  \"required\": [\"intro\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        1136
+      ],
+      "id": "e2386517-ad4b-4089-b075-d46a4c6b8483",
+      "name": "Structured Output Parser5",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data.slice(0, 2000) }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a field reporter for Nairobi Nexus.\n\nAnalyze the provided webpage content and identify the single most important finance, startup, business, or technology headline.\n\nReturn ONLY valid JSON.\n\nFormat:\n{\n  \"source\": \"Kenyan WallStreet\",\n  \"headline\": \"headline text\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        1712
+      ],
+      "id": "d46683d5-9fd2-4b9e-9d8f-3cd63c9d6bf4",
+      "name": "AI Agent_The Kenyan wall street",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "llama-3.3-70b-versatile",
+          "mode": "list",
+          "cachedResultName": "llama-3.3-70b-versatile"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "maxTokens": 0,
+          "temperature": 0.1,
+          "timeout": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        1136
+      ],
+      "id": "4f0deec9-0b06-4d4f-881a-4d042783f04b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "9dtp33XuCKUBMjpT",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2b7227e1-05f9-4607-b7d5-031570453653",
+        "responseMode": "lastNode",
+        "responseData": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1008,
+        912
+      ],
+      "id": "29dc011d-104a-49cf-8e76-1a822c7fbbcb",
+      "name": "Webhook",
+      "webhookId": "2b7227e1-05f9-4607-b7d5-031570453653",
+      "retryOnFail": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Star": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Standard": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "HTTP_Business Daily Reporter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent _ Business Daily Reporter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP_The Star": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent _ TechCabal Reporter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP _ TechCabal": {
+      "main": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP_The Standard": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP _The Kenyan Wallstreet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser4": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_Chief Editor": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Kenyan wall street": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP _ TechCabal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_Business Daily Reporter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_The Star",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_The Standard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP _The Kenyan Wallstreet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qNsi3wyWDlB5q5uQ",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "1bb02ed6-27bf-47d7-8bb8-24d53ae8a72f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3065d4ed6c4cdd44548680cfc92ce78ba1e34a018d6082841eec957d30a390a4"
+  },
+  "id": "0BNHy4WjvxA6OAj5",
+  "tags": []
+}
