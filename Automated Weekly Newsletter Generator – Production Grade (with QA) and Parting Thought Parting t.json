@@ -1,0 +1,1902 @@
+{
+  "name": "Automated Weekly Newsletter Generator – Production Grade (with QA) and Parting Thought Parting t",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://techcabal.com/category/news/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        112
+      ],
+      "id": "e5a44230-e23d-43e3-9544-57f04ef5b461",
+      "name": "HTTP _ TechCabal",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.body || $input.item.json.data || $input.item.json;\nconst cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\nconst truncated = cleanText.slice(0, 5000);\nreturn { json: { data: truncated } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        112
+      ],
+      "id": "1362373a-7981-4069-8500-9c4b951d12da",
+      "name": "Truncate TechCabal"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a field reporter for Nairobi Nexus.\n\nAnalyze the provided HTML and extract the single most important tech or business headline.\n\nIMPORTANT:\n- Return ONLY valid JSON\n- Do not include explanations\n- Do not use markdown\n- Do not wrap the JSON in backticks\n\nCorrect format:\n{\n  \"source\": \"TechCabal\",\n  \"headline\": \"headline text here\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ddb758cc-2030-4e33-afba-51bfd2f20d66",
+      "name": "AI Agent _ TechCabal Reporter",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"source\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the news source (e.g., TechCabal, Business Daily, etc.)\"\n    },\n    \"headline\": {\n      \"type\": \"string\",\n      \"description\": \"The single most important headline extracted from the source\"\n    }\n  },\n  \"required\": [\"source\", \"headline\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        224
+      ],
+      "id": "922fcef3-4c9c-484a-84ca-ca03f317b239",
+      "name": "Structured Output Parser",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nif (!output || typeof output !== 'object') {\n  return { json: { source: $input.item.json.source || \"Unknown\", headline: null, valid: false } };\n}\nif (!output.source || typeof output.source !== 'string') output.source = \"Unknown\";\nif (!output.headline || typeof output.headline !== 'string') output.headline = null;\noutput.valid = (output.headline !== null && output.headline.length > 0);\nreturn { json: output };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "deddc990-a7d7-417b-8f33-85a14250dbd3",
+      "name": "Validate TechCabal"
+    },
+    {
+      "parameters": {
+        "url": "https://www.businessdailyafrica.com/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        512
+      ],
+      "id": "3ffc5791-988d-41db-b5db-937ef4a8687b",
+      "name": "HTTP_Business Daily Reporter",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.body || $input.item.json.data || $input.item.json;\nconst cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\nconst truncated = cleanText.slice(0, 5000);\nreturn { json: { data: truncated } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        512
+      ],
+      "id": "c758dce5-9801-4932-ad32-7beb0c2da471",
+      "name": "Truncate Business Daily"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a field reporter for Nairobi Nexus.\n\nExtract the single most important Kenyan business or tech headline from the raw HTML.\n\nReturn ONLY valid JSON:\n{\n  \"source\": \"Business Daily\",\n  \"headline\": \"headline text\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        400
+      ],
+      "id": "233c406a-5398-4201-a10a-e81a729d556f",
+      "name": "AI Agent _ Business Daily Reporter",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"source\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the news source (e.g., TechCabal, Business Daily, etc.)\"\n    },\n    \"headline\": {\n      \"type\": \"string\",\n      \"description\": \"The single most important headline extracted from the source\"\n    }\n  },\n  \"required\": [\"source\", \"headline\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        624
+      ],
+      "id": "b2b11350-b57d-4aa8-9273-95a3553db88a",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nif (!output || typeof output !== 'object') {\n  return { json: { source: $input.item.json.source || \"Unknown\", headline: null, valid: false } };\n}\nif (!output.source || typeof output.source !== 'string') output.source = \"Unknown\";\nif (!output.headline || typeof output.headline !== 'string') output.headline = null;\noutput.valid = (output.headline !== null && output.headline.length > 0);\nreturn { json: output };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        400
+      ],
+      "id": "7c914a41-1cd8-42de-afe6-371dda29427c",
+      "name": "Validate Business Daily"
+    },
+    {
+      "parameters": {
+        "url": "https://www.the-star.co.ke/news",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        912
+      ],
+      "id": "07d375df-9c98-4a89-9639-e7485bfcecb2",
+      "name": "HTTP_The Star",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.body || $input.item.json.data || $input.item.json;\nconst cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\nconst truncated = cleanText.slice(0, 5000);\nreturn { json: { data: truncated } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        912
+      ],
+      "id": "5cfc010c-4a5b-4ff8-81fa-6b1524227270",
+      "name": "Truncate The Star"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "Extract the top tech, startup, or economy headline.\n\nReturn JSON:\n{\n  \"source\": \"The Star\",\n  \"headline\": \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        800
+      ],
+      "id": "61039986-c003-490d-9412-4310d962767d",
+      "name": "AI Agent_The Star",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"source\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the news source (e.g., TechCabal, Business Daily, etc.)\"\n    },\n    \"headline\": {\n      \"type\": \"string\",\n      \"description\": \"The single most important headline extracted from the source\"\n    }\n  },\n  \"required\": [\"source\", \"headline\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        1024
+      ],
+      "id": "843eef26-4e47-4a74-b2fa-70931ef59262",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nif (!output || typeof output !== 'object') {\n  return { json: { source: $input.item.json.source || \"Unknown\", headline: null, valid: false } };\n}\nif (!output.source || typeof output.source !== 'string') output.source = \"Unknown\";\nif (!output.headline || typeof output.headline !== 'string') output.headline = null;\noutput.valid = (output.headline !== null && output.headline.length > 0);\nreturn { json: output };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        800
+      ],
+      "id": "b553ddef-5032-4d9c-b8ed-3452a1d9fdcb",
+      "name": "Validate The Star"
+    },
+    {
+      "parameters": {
+        "url": "https://www.standardmedia.co.ke/",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        1312
+      ],
+      "id": "2db19bc5-0686-4d25-836a-275c08798404",
+      "name": "HTTP_The Standard",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.body || $input.item.json.data || $input.item.json;\nconst cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\nconst truncated = cleanText.slice(0, 5000);\nreturn { json: { data: truncated } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1312
+      ],
+      "id": "4b0a330c-31ca-4284-983f-03d9433aac80",
+      "name": "Truncate The Standard"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "Extract the most important innovation or economy headline.\n\nReturn ONLY JSON:\n{\n  \"source\": \"The Standard\",\n  \"headline\": \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        1200
+      ],
+      "id": "ca23ac7d-d4cc-48f3-a873-d83b2406ead3",
+      "name": "AI Agent_The Standard",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"source\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the news source (e.g., TechCabal, Business Daily, etc.)\"\n    },\n    \"headline\": {\n      \"type\": \"string\",\n      \"description\": \"The single most important headline extracted from the source\"\n    }\n  },\n  \"required\": [\"source\", \"headline\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        1424
+      ],
+      "id": "1a5361e6-883d-4363-b24d-41e242a01511",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nif (!output || typeof output !== 'object') {\n  return { json: { source: $input.item.json.source || \"Unknown\", headline: null, valid: false } };\n}\nif (!output.source || typeof output.source !== 'string') output.source = \"Unknown\";\nif (!output.headline || typeof output.headline !== 'string') output.headline = null;\noutput.valid = (output.headline !== null && output.headline.length > 0);\nreturn { json: output };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1200
+      ],
+      "id": "3913a67f-c0f4-412b-a36a-bee25a6d2ce1",
+      "name": "Validate The Standard"
+    },
+    {
+      "parameters": {
+        "url": "https://kenyanwallstreet.com/",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        1712
+      ],
+      "id": "91a2a8c9-b0a0-4715-ad35-b1d6af0fddec",
+      "name": "HTTP _The Kenyan Wallstreet",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.body || $input.item.json.data || $input.item.json;\nconst cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\nconst truncated = cleanText.slice(0, 5000);\nreturn { json: { data: truncated } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1712
+      ],
+      "id": "1ee7588f-75b5-4202-8c66-9265edbd4379",
+      "name": "Truncate Kenyan Wallstreet"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data.slice(0, 2000) }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a field reporter for Nairobi Nexus.\n\nAnalyze the provided webpage content and identify the single most important finance, startup, business, or technology headline.\n\nReturn ONLY valid JSON.\n\nFormat:\n{\n  \"source\": \"Kenyan WallStreet\",\n  \"headline\": \"headline text\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        1712
+      ],
+      "id": "97e5c8f5-2e29-461b-9faa-8cfca0d23494",
+      "name": "AI Agent_The Kenyan wall street",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"source\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the news source (e.g., TechCabal, Business Daily, etc.)\"\n    },\n    \"headline\": {\n      \"type\": \"string\",\n      \"description\": \"The single most important headline extracted from the source\"\n    }\n  },\n  \"required\": [\"source\", \"headline\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        1936
+      ],
+      "id": "198143bf-2c90-4857-b7e8-fd0984d394dd",
+      "name": "Structured Output Parser4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nif (!output || typeof output !== 'object') {\n  return { json: { source: $input.item.json.source || \"Unknown\", headline: null, valid: false } };\n}\nif (!output.source || typeof output.source !== 'string') output.source = \"Unknown\";\nif (!output.headline || typeof output.headline !== 'string') output.headline = null;\noutput.valid = (output.headline !== null && output.headline.length > 0);\nreturn { json: output };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1712
+      ],
+      "id": "830ea385-d785-49b8-b9e9-6d59aeafd685",
+      "name": "Validate Kenyan Wallstreet"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        592,
+        864
+      ],
+      "id": "7be35a74-0bfe-4611-8642-845f4839c6f2",
+      "name": "Merge Field Reports"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        768,
+        864
+      ],
+      "id": "ca1a5e0e-e073-480f-9b06-f03698f58948",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json.data;\nlet successCount = 0;\nlet failedSources = [];\nfor (const item of data) {\n  if (item.valid === true) {\n    successCount++;\n  } else {\n    failedSources.push(item.source || \"unknown\");\n  }\n}\nreturn {\n  json: {\n    data: data,\n    governance: {\n      timestamp: new Date().toISOString(),\n      sourcesSucceeded: successCount,\n      sourcesFailedList: failedSources.join(\", \"),\n      workflowVersion: \"2.0.0\"\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        912
+      ],
+      "id": "24307853-8024-4b7f-b2f3-4da41db7d895",
+      "name": "Count & Governance"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are the headlines from Kenyan publications:\n{{ JSON.stringify($json.data) }}\n\nRespond with ONLY this JSON and nothing else — no markdown fences, no explanation:\n{\"intro\": \"your markdown newsletter here\"}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are Kamau, a witty tech editor in Nairobi. Synthesize the following headlines into a short, engaging newsletter intro.\n\nConstraints:\n1. Strictly under 200 words.\n2. Use Kenyan slang (e.g., \"Bazeng\", \"Form ni gani\", \"Sasa\", \"Niaje\").\n3. Format the output as Markdown.\n\nOutput ONLY the newsletter intro, no extra text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1200,
+        912
+      ],
+      "id": "b7c2ae44-7869-4785-8dc8-bd719fa127c2",
+      "name": "AI Agent_Chief Editor"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output || $input.item.json;\nif (!output || typeof output !== 'object') {\n  return { json: { output: { intro: \"⚠️ Newsletter generation encountered a technical issue. Full content will be available next week.\" } } };\n}\nconst intro = output.intro || output.text || \"\";\nif (typeof intro !== 'string' || intro.trim().length === 0) {\n  return { json: { output: { intro: \"⚠️ The AI produced an empty response. Please check the logs.\" } } };\n}\nreturn { json: { output } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        656
+      ],
+      "id": "be917c19-cf0a-4ee0-8323-23f47753c52c",
+      "name": "Validate Chief Output"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1728,
+        1104
+      ],
+      "id": "6ea9ac9f-c9a3-4422-b4dd-cd9d8e5bb6f1",
+      "name": "Merge Success/Fallback"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original newsletter intro:\n{{ $json.output.intro }}\n\nHeadlines used (for relevance check):\n{{ JSON.stringify($json.data) }}\n\nValidate and correct as needed. Return the JSON as instructed.",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a quality assurance agent for a weekly newsletter. Your task is to validate and optionally correct the newsletter introduction text according to strict business rules.\n\nRules:\n1. Length: Must be under 200 words. If longer, truncate to the first 200 words.\n2. Kenyan slang: Must contain at least one Kenyan slang word (e.g., \"Bazeng\", \"Form ni gani\", \"Sasa\", \"Niaje\", \"Poa\", \"Sawa\", \"Maze\").\n3. Markdown: Must be valid Markdown (headings, bold, italics, lists allowed; raw HTML is not allowed).\n4. Content: Must be relevant to the provided headlines (no unrelated topics).\n\nOutput ONLY a JSON object with the following keys:\n- \"passed\": boolean (true if all rules are satisfied)\n- \"corrected_intro\": string (the intro after any corrections; if passed is true, this should be the original intro)\n- \"issues\": array of strings (list of any rules violated)\n\nDo not include any extra text, explanations, or markdown fences.\nAdditionally, generate a one-sentence \"Parting Word\" for the end of the newsletter.\nIt should be a brief, uplifting or thought-provoking insight related to the week's themes, suitable for a thoughtful sign-off."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1792,
+        1440
+      ],
+      "id": "93ca582e-1a7f-4463-872d-075df331ecfa",
+      "name": "QA Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\nconst qaOutput = item.output || item;\nconst correctedIntro = qaOutput.corrected_intro || \"⚠️ QA processing failed. Please check logs.\";\nconst governance = $node[\"Count & Governance\"].json.governance;\nconst isFallback = item._fallback === true;\nif (isFallback) {\n  governance.fallbackTriggered = true;\n} else {\n  governance.fallbackTriggered = false;\n}\nreturn {\n  json: {\n    intro: correctedIntro,\n    parting_word: qaOutput.parting_word || \"Keep learning, keep growing.\",\n    governance: governance,\n    qa_passed: qaOutput.passed,\n    qa_issues: qaOutput.issues || []\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        1104
+      ],
+      "id": "66b255a8-1c37-4ef1-a3c0-8df146ee5ff9",
+      "name": "Extract Governance & Intro"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit?gid=1574345771#gid=1574345771",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Drafts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "=={{ $now }}",
+            "Successful Sources": "=={{ $node[\"Count & Governance\"].json.governance.sourcesSucceeded }}",
+            "Draft Body": "={{ $json.intro }}",
+            "Model Used": "gpt-4o-mini (fallback: llama-3.1-8b-instant)"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Successful Sources",
+              "displayName": "Successful Sources",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Draft Body",
+              "displayName": "Draft Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Model Used",
+              "displayName": "Model Used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2368,
+        912
+      ],
+      "id": "7014f911-d422-478c-85de-9d31429256a2",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HKdh8bIHFchf6mJI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit?gid=1574345771#gid=1574345771",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1574345771,
+          "mode": "list",
+          "cachedResultName": "Governance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit#gid=1574345771"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "=={{ $json.governance.timestamp }}",
+            "Sources Succeeded": "=={{ $json.governance.sourcesSucceeded }}",
+            "Sources Failed": "=={{ $json.governance.sourcesFailedList }}",
+            "Model Used": "=={{ $json.governance.fallbackTriggered ? \"magistral-small-latest\" : \"llama-3.3-70b-versatile\" }}",
+            "Workflow Version": "=={{ $json.governance.workflowVersion }}",
+            "Output Status": "=={{ $json.governance.outputStatus || 'success' }}",
+            "Fallback Triggered": "=={{ $json.governance.fallbackTriggered || false }}",
+            "QA Passed": "=={{ $json.qa_passed }}",
+            "QA Issues": "=={{ $json.qa_issues.join(', ') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sources Succeeded",
+              "displayName": "Sources Succeeded",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sources Failed",
+              "displayName": "Sources Failed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Model Used",
+              "displayName": "Model Used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Workflow Version",
+              "displayName": "Workflow Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Output Status",
+              "displayName": "Output Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fallback Triggered",
+              "displayName": "Fallback Triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "QA Passed",
+              "displayName": "QA Passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "QA Issues",
+              "displayName": "QA Issues",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2368,
+        1104
+      ],
+      "id": "c3c63a2f-1a02-4b14-8ae2-a7537c6efb2e",
+      "name": "Log Governance",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HKdh8bIHFchf6mJI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mercykihugu484@gmail.com",
+        "subject": "=Nairobi Nexus Draft – {{ $now.toFormat('yyyy-MM-dd') }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"padding: 20px;\">\n    <h2>Your Nairobi Nexus Weekly Digest</h2>\n    <div>{{ $node[\"Extract Governance & Intro\"].json.intro }}</div>\n    <hr style=\"margin: 20px 0; border: 0; border-top: 1px solid #eee;\">\n    <div style=\"color: #666; font-style: italic;\">\n      💡 <strong>This week's parting thought:</strong><br>\n      \"{{ $node[\"Extract Governance & Intro\"].json.parting_word }}\"\n    </div>\n    <hr style=\"margin: 20px 0; border: 0; border-top: 1px solid #eee;\">\n    <div style=\"color: #999; font-size: 12px;\">\n      This newsletter was automatically generated by the Nairobi Nexus AI system.\n    </div>\n  </div>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2592,
+        912
+      ],
+      "id": "da82d2cf-44cb-4f94-8965-97f558bb8978",
+      "name": "Send a message",
+      "webhookId": "9aa85e41-f3f4-41d7-951f-aa3925752339",
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Amd7JoXwP5xwUr2O",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        224
+      ],
+      "id": "07916520-1003-43b6-835f-f7fba2fd4b07",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bATTxkU152jS5uVc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-lite-latest",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        224
+      ],
+      "id": "f39d2bed-e238-439d-92d4-ba2e98c5d539",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bATTxkU152jS5uVc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        624
+      ],
+      "id": "af194a7d-85fb-4b85-a916-0551158b90e4",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bATTxkU152jS5uVc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1024
+      ],
+      "id": "2f392d9a-e03e-4059-8efa-9e87dbe7f80d",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "magistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        64,
+        1024
+      ],
+      "id": "2e8e05dc-7be7-4aa4-8206-76dba982aa81",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1424
+      ],
+      "id": "0d29f332-0158-46e1-8e03-24f64e32163e",
+      "name": "Mistral Cloud Chat Model2",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        64,
+        1424
+      ],
+      "id": "7fc6ac4a-0686-4665-8ecd-2ca007d23ec8",
+      "name": "Mistral Cloud Chat Model3",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1936
+      ],
+      "id": "d636cc6b-409c-4f22-8b3e-639b3702d0dc",
+      "name": "Mistral Cloud Chat Model4",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        64,
+        1936
+      ],
+      "id": "c8084162-77a5-471b-b592-5b76f0fc3719",
+      "name": "Mistral Cloud Chat Model5",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "f07295a2-dc1c-4f1d-b142-87a7e26fa029",
+        "responseMode": "lastNode",
+        "responseData": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -544,
+        912
+      ],
+      "id": "39180f06-b49f-4526-8085-c8d105e8ea6b",
+      "name": "Webhook",
+      "webhookId": "f07295a2-dc1c-4f1d-b142-87a7e26fa029",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        624
+      ],
+      "id": "29ec754d-582a-47da-8545-0c0867755b48",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "cc2vElBS5dYsY91k",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        1120
+      ],
+      "id": "f9dbc5c3-1256-4ff9-bd76-1c442fd2738f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hA6sEuqpU2PWUlkp",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        1312
+      ],
+      "id": "5608769e-2fa4-451d-b519-6cedd743b0d4",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "hA6sEuqpU2PWUlkp",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"intro\": {\n      \"type\": \"string\",\n      \"description\": \"The newsletter introduction text, strictly under 200 words, using Kenyan slang, formatted as Markdown.\"\n    }\n  },\n  \"required\": [\"intro\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        1120
+      ],
+      "id": "33c6b6fb-743b-47a5-8fa6-28520ff657d1",
+      "name": "Structured Output Parser5"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"intro\": {\n      \"type\": \"string\",\n      \"description\": \"The newsletter introduction text, strictly under 200 words, using Kenyan slang, formatted as Markdown.\"\n    }\n  },\n  \"required\": [\"intro\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        1744
+      ],
+      "id": "7c510486-0ef7-4c10-a064-cc0ce2afb82c",
+      "name": "Structured Output Parser6"
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        992,
+        1744
+      ],
+      "id": "a4387ee2-868e-497c-9fb6-9ae0552188e4",
+      "name": "Mistral Cloud Chat Model6",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"passed\": { \"type\": \"boolean\" },\n    \"corrected_intro\": { \"type\": \"string\" },\n    \"issues\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n    \"parting_word\": { \"type\": \"string\" }\n  },\n  \"required\": [\"passed\", \"corrected_intro\", \"issues\", \"parting_word\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        1648
+      ],
+      "id": "1000a99a-78c7-4980-ba8e-f9fd329aab40",
+      "name": "Structured Output Parser7",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        1648
+      ],
+      "id": "e0bb4eb2-f375-412d-8738-729cf3ea8657",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "cc2vElBS5dYsY91k",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        1744
+      ],
+      "id": "4afe88ab-a589-48cc-a425-7b8e95896ccf",
+      "name": "Mistral Cloud Chat Model7",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ JSON.stringify($node[\"Count & Governance\"].json.data) }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a backup newsletter editor. The primary editor is temporarily unavailable.\nWrite a very short, simple newsletter intro (under 80 words) using basic Kenyan slang like 'Sasa' or 'Poa'.\nApologize briefly and promise a full newsletter next week.\nOutput ONLY a JSON object with a single key \"intro\" containing the text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1136,
+        1536
+      ],
+      "id": "b08e056b-edda-4ed9-b1ee-7cd48f106c5a",
+      "name": "Backup Chief Editor"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $input.item.json;\n// Add a flag to indicate this came from the fallback path\ndata._fallback = true;\nreturn { json: data };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        1536
+      ],
+      "id": "36ca6ea3-23ac-42a0-8640-4b1d30c73f1c",
+      "name": "Flag Fallback",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "maxTokens": 200,
+          "responseFormat": "json_object",
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        1840
+      ],
+      "id": "c722993b-cbb7-4892-b33d-0a8987c11e40",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "cc2vElBS5dYsY91k",
+          "name": "OpenAI account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP _ TechCabal": {
+      "main": [
+        [
+          {
+            "node": "Truncate TechCabal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Truncate TechCabal": {
+      "main": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent _ TechCabal Reporter": {
+      "main": [
+        [
+          {
+            "node": "Validate TechCabal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate TechCabal": {
+      "main": [
+        [
+          {
+            "node": "Merge Field Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP_Business Daily Reporter": {
+      "main": [
+        [
+          {
+            "node": "Truncate Business Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Truncate Business Daily": {
+      "main": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent _ Business Daily Reporter": {
+      "main": [
+        [
+          {
+            "node": "Validate Business Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Business Daily": {
+      "main": [
+        [
+          {
+            "node": "Merge Field Reports",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP_The Star": {
+      "main": [
+        [
+          {
+            "node": "Truncate The Star",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Truncate The Star": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Star": {
+      "main": [
+        [
+          {
+            "node": "Validate The Star",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate The Star": {
+      "main": [
+        [
+          {
+            "node": "Merge Field Reports",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "HTTP_The Standard": {
+      "main": [
+        [
+          {
+            "node": "Truncate The Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Truncate The Standard": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Standard": {
+      "main": [
+        [
+          {
+            "node": "Validate The Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate The Standard": {
+      "main": [
+        [
+          {
+            "node": "Merge Field Reports",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "HTTP _The Kenyan Wallstreet": {
+      "main": [
+        [
+          {
+            "node": "Truncate Kenyan Wallstreet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Truncate Kenyan Wallstreet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_The Kenyan wall street": {
+      "main": [
+        [
+          {
+            "node": "Validate Kenyan Wallstreet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Kenyan Wallstreet": {
+      "main": [
+        [
+          {
+            "node": "Merge Field Reports",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge Field Reports": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Count & Governance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count & Governance": {
+      "main": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent_Chief Editor": {
+      "main": [
+        [
+          {
+            "node": "Validate Chief Output",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Backup Chief Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Chief Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Success/Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Success/Fallback": {
+      "main": [
+        [
+          {
+            "node": "QA Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Governance & Intro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Governance & Intro": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Governance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent _ TechCabal Reporter",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Star",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Standard",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser4": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_The Kenyan wall street",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP _ TechCabal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_Business Daily Reporter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_The Star",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP_The Standard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP _The Kenyan Wallstreet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent _ Business Daily Reporter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent_Chief Editor",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser6": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Backup Chief Editor",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Backup Chief Editor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser7": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "QA Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "QA Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "QA Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Backup Chief Editor": {
+      "main": [
+        [
+          {
+            "node": "Flag Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag Fallback": {
+      "main": [
+        [
+          {
+            "node": "Merge Success/Fallback",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Backup Chief Editor",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f2824c59-9e1b-4e93-9b9b-74bfe0e03d84",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "87a078f3bc48d2fed8c592932447116865d97ee0ec39c410fb1495422eda3431"
+  },
+  "id": "GSGxH3bqGXweRafC",
+  "tags": []
+}
