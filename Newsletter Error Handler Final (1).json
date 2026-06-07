@@ -1,0 +1,266 @@
+{
+  "name": "Newsletter Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "9351ccc4-2041-4fd0-90be-ad84ae95b564",
+      "name": "Error Trigger",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "amosmokua3@gmail.com",
+        "subject": "⚠️ Fallback Newsletter Draft (Chief Editor Failed)",
+        "message": "=<html>\n<body>\n  <h2>Fallback Newsletter Draft</h2>\n  <p>{{ $json.output.intro }}</p>\n  <hr />\n  <p><small>Generated automatically due to primary editor failure.</small></p>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -32
+      ],
+      "id": "88a0d6a6-288b-4ffe-adb4-215ea7ec560d",
+      "name": "Send a message",
+      "webhookId": "4b76e476-6861-4b08-800f-6e60defd4999",
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PuUrOjjx2KSHbAoA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The newsletter workflow encountered an error: {{ $json.execution.error.description }}\nPlease generate a simple fallback newsletter intro as instructed.",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a backup newsletter editor. The primary editor failed unexpectedly.\nWrite a very short, simple newsletter intro (under 100 words) using basic Kenyan slang like \"Sasa\" or \"Poa\".\nApologize for the inconvenience and promise the full newsletter next week.\nFormat as plain text. Output ONLY the intro text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        -32
+      ],
+      "id": "e953649e-6c1d-4ebe-945f-bbdf6c6a79a2",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"intro\": { \"type\": \"string\" }\n  },\n  \"required\": [\"intro\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        192
+      ],
+      "id": "33e8dff0-5f6f-431b-aea3-3943a2760781",
+      "name": "Structured Output Parser",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        400,
+        176
+      ],
+      "id": "61377559-3dee-4c6b-a026-c7b23da43327",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-2506",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        496,
+        272
+      ],
+      "id": "6031235e-3810-4980-b83a-5976903320d1",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "a4MfAoceuvVk7k29",
+          "name": "Mistral Cloud account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "787",
+            "url": "https://amosmokua3.app.n8n.cloud/workflow/0BNHy4WjvxA6OAj5/executions/787",
+            "error": {
+              "level": "warning",
+              "tags": {
+                "reWrapped": true
+              },
+              "description": "`max_tokens` must be positive",
+              "timestamp": 1780236740569,
+              "context": {},
+              "functionality": "regular",
+              "name": "NodeOperationError",
+              "node": {
+                "parameters": {
+                  "aiAgentStarterCallout": "",
+                  "promptType": "define",
+                  "text": "=Here are the headlines from Kenyan publications:\n{{ JSON.stringify($json.data) }}\n\nRespond with ONLY this JSON and nothing else — no markdown fences, no explanation:\n{\"intro\": \"your markdown newsletter here\"}",
+                  "hasOutputParser": true,
+                  "notice": "",
+                  "needsFallback": false,
+                  "options": {
+                    "systemMessage": "You are Kamau, a witty tech editor in Nairobi. Synthesize the following headlines into a short, engaging newsletter intro.\n\nConstraints:\n1. Strictly under 200 words.\n2. Use Kenyan slang (e.g., \"Bazeng\", \"Form ni gani\", \"Sasa\", \"Niaje\").\n3. Format the output as Markdown.\n\nOutput ONLY the newsletter intro, no extra text."
+                  }
+                },
+                "type": "@n8n/n8n-nodes-langchain.agent",
+                "typeVersion": 3.1,
+                "position": [
+                  384,
+                  912
+                ],
+                "id": "c2efc4f5-4f06-4a7f-874a-3d23c440f963",
+                "name": "AI Agent_Chief Editor",
+                "retryOnFail": true
+              },
+              "messages": [
+                "400 `max_tokens` must be positive"
+              ],
+              "message": "Bad request - please check your parameters",
+              "stack": "NodeOperationError: Bad request - please check your parameters\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+n8n-nodes-langchain@file+packages+@n8n+nodes-langchain_d8896bbac334dcd7b1d92e42db4167d9/node_modules/@n8n/n8n-nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/V3/helpers/executeBatch.ts:117:11\n    at Array.forEach (<anonymous>)\n    at executeBatch (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+n8n-nodes-langchain@file+packages+@n8n+nodes-langchain_d8896bbac334dcd7b1d92e42db4167d9/node_modules/@n8n/n8n-nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/V3/helpers/executeBatch.ts:106:15)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ExecuteContext.toolsAgentExecute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+n8n-nodes-langchain@file+packages+@n8n+nodes-langchain_d8896bbac334dcd7b1d92e42db4167d9/node_modules/@n8n/n8n-nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/V3/execute.ts:93:8)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+n8n-nodes-langchain@file+packages+@n8n+nodes-langchain_d8896bbac334dcd7b1d92e42db4167d9/node_modules/@n8n/n8n-nodes-langchain/nodes/agents/Agent/V3/AgentV3.node.ts:151:10)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_2c2e1f47b69b34bef6f634a13cbf61d9/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1048:9)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_2c2e1f47b69b34bef6f634a13cbf61d9/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1239:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_2c2e1f47b69b34bef6f634a13cbf61d9/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1687:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_2c2e1f47b69b34bef6f634a13cbf61d9/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2339:11"
+            },
+            "lastNodeExecuted": "AI Agent_Chief Editor",
+            "mode": "webhook",
+            "executionContext": {
+              "version": 1,
+              "establishedAt": 1780236685320,
+              "source": "webhook",
+              "redaction": {
+                "version": 1,
+                "policy": "none"
+              },
+              "triggerNode": {
+                "name": "Webhook",
+                "type": "n8n-nodes-base.webhook"
+              }
+            }
+          },
+          "workflow": {
+            "id": "0BNHy4WjvxA6OAj5",
+            "name": "Automated Weekly Newsletter Generator Final copy"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "a6006c9f-2ca7-4ca8-9f96-08644cc76a13",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3065d4ed6c4cdd44548680cfc92ce78ba1e34a018d6082841eec957d30a390a4"
+  },
+  "id": "qNsi3wyWDlB5q5uQ",
+  "tags": []
+}
