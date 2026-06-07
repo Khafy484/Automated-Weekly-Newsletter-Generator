@@ -1,0 +1,295 @@
+{
+  "name": "Audit Answer with AI",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "15aee6d1-cd7d-454e-bd04-9e13660b947f",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "23061244-4688-49c1-9670-1ba66ffaa87b",
+      "name": "Ask Question",
+      "webhookId": "15aee6d1-cd7d-454e-bd04-9e13660b947f",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1574345771,
+          "mode": "list",
+          "cachedResultName": "Governance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kXvqO8aGantVvrwQ1GgL2NQMevvMrmjIHrFsd5qHaFs/edit#gid=1574345771"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "abbc7b27-e719-4782-a983-a1b787e111e7",
+      "name": "Read Latest Run",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HKdh8bIHFchf6mJI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "Timestamp",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "7731de7f-716a-4068-b517-0e1f853429d4",
+      "name": "Sort",
+      "executeOnce": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "aaa37792-015f-4164-87ea-4959ca827e4f",
+      "name": "Limit",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "mercykihugu484@gmail.com",
+        "subject": "Audit Answer: What happened last Friday?",
+        "message": "={{ $json.output.answer }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "274731be-52c5-422f-b87b-03f7e1d30cb5",
+      "name": "Send a message",
+      "webhookId": "cd9656e3-dd41-4068-a84b-64e6f6b76d0f",
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Amd7JoXwP5xwUr2O",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the execution log: {{ JSON.stringify($json) }}\n\nPlease answer as instructed.",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are an audit assistant. You will receive a JSON object containing one row from the Governance sheet (execution log of the weekly newsletter).\n\nConvert this data into a friendly, one‑sentence answer that answers: “What happened on that day?”\n\nInclude the date, number of successful sources, which sources failed (if any), which AI model was used, whether QA passed, and the parting thought.\n\nKeep the tone professional but warm."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "aec583ea-6715-474c-a536-c60cd276c8a4",
+      "name": "Generate Answer"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokensToSample": 200,
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        848,
+        304
+      ],
+      "id": "f0b345c3-e2a3-4bad-9039-27e4e90c1580",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hA6sEuqpU2PWUlkp",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"answer\": {\n      \"type\": \"string\",\n      \"description\": \"A friendly, one‑sentence answer to 'What happened last Friday?' based on the governance log.\"\n    }\n  },\n  \"required\": [\"answer\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        208
+      ],
+      "id": "98133265-4465-47e9-a352-55fe88d97cf9",
+      "name": "Structured Output Parser",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        768,
+        208
+      ],
+      "id": "7a761d75-9296-4a69-8c59-76edff31fe74",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gAykUPOcSoQmR4NC",
+          "name": "Mistral Cloud account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ask Question": {
+      "main": [
+        [
+          {
+            "node": "Read Latest Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Latest Run": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Generate Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Answer": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Answer",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Answer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Answer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "aea0fd98-8c55-4772-a00c-973cb269807a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "87a078f3bc48d2fed8c592932447116865d97ee0ec39c410fb1495422eda3431"
+  },
+  "id": "1tZ67ABg8cJKfID2",
+  "tags": []
+}
